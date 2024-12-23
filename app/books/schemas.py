@@ -1,11 +1,23 @@
 from pydantic import BaseModel
-from datetime import date
+from datetime import date, datetime
 from typing import Optional
+import uuid
 
 
 # defining models for input validations using pydantic
 class Book(BaseModel):
-    id: int
+    id: uuid.UUID
+    title: str
+    author: str
+    publisher: str
+    publish_date: date
+    page_count: int
+    language: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class BookCreateModel(BaseModel):
     title: str
     author: str
     publisher: str
