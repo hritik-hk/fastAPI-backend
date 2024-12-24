@@ -4,8 +4,10 @@ from app.books.routes import book_router
 from app.configs.settings import VERSION, SERVER_HOST, SERVER_PORT
 from app.database.main import init_db
 
+
 @asynccontextmanager
 async def lifeSpan_events(app: FastAPI):
+    print(f"server starting on port: {SERVER_PORT}")
     await init_db()
     yield
 
