@@ -5,7 +5,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from uuid import UUID
 
 
-from app.books.schemas import Book, BookUpdateModel, BookCreateModel
+from .schemas import Book, BookUpdateModel, BookCreateModel
 from .service import BookService
 from app.database.main import get_session
 
@@ -22,7 +22,7 @@ async def get_all_books(session: AsyncSession = Depends(get_session)):
 
 
 # get a book using book_id from DB
-@book_router.get("/{book_id}",response_model=Book)
+@book_router.get("/{book_id}", response_model=Book)
 async def get_book(book_id: UUID, session: AsyncSession = Depends(get_session)) -> dict:
     book = await book_service.get_book(book_id, session)
 
@@ -50,7 +50,7 @@ async def create_book(
 
 
 # update a particular DB
-@book_router.patch("/{book_id}",response_model=Book)
+@book_router.patch("/{book_id}", response_model=Book)
 async def update_book(
     book_id: UUID,
     book_update_data: BookUpdateModel,
