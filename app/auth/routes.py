@@ -2,12 +2,13 @@ from fastapi import APIRouter, Depends, status
 from sqlmodel.ext.asyncio.session import AsyncSession
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
+from datetime import timedelta
+
 
 from .schemas import UserCreateModel, UserModel, UserLoginModel
 from .service import UserService
 from app.database.main import get_session
 from .utils import create_access_token, verify_password
-from datetime import timedelta
 
 
 auth_router = APIRouter()

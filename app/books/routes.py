@@ -8,15 +8,20 @@ from uuid import UUID
 from .schemas import Book, BookUpdateModel, BookCreateModel
 from .service import BookService
 from app.database.main import get_session
+from app.auth.dependencies import AccessTokenBearer
 
 
 book_router = APIRouter()
 book_service = BookService()
+access_token_bearer = AccessTokenBearer()
 
 
 # get all books
 @book_router.get("/", response_model=List[Book])
-async def get_all_books(session: AsyncSession = Depends(get_session)):
+async def get_all_books(
+    session: AsyncSession = Depends(get_session),
+    user_details=Depends(access_token_bearer),
+):
     books = await book_service.get_all_books(session)
     return books
 
