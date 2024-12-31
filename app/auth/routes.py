@@ -2,13 +2,15 @@ from fastapi import APIRouter, Depends, status
 from sqlmodel.ext.asyncio.session import AsyncSession
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 
 from .schemas import UserCreateModel, UserModel, UserLoginModel
 from .service import UserService
 from app.database.main import get_session
 from .utils import create_access_token, verify_password
+from .dependencies import RefreshTokenBearer, AccessTokenBearer
+from app.database.redis import add_jwtId_to_blocklist
 
 
 auth_router = APIRouter()
@@ -55,7 +57,7 @@ async def login_user(
             refresh_token = create_access_token(
                 user_data={
                     "email": user.email,
-                    "userId": user.id,
+                    "userId": str(user.id),
                 },
                 expiry=timedelta(days=2),
                 refresh=True,
@@ -74,3 +76,24 @@ async def login_user(
         status_code=status.HTTP_403_FORBIDDEN,
         detail={"message": "invalid email or password"},
     )
+
+
+@auth_router.get("/refresh_token")
+async def get_new_access_token(token_details: dict = Depends(RefreshTokenBearer())):
+    expiry_timestamp = token_details["exp"]
+
+    if datetime.fromtimestamp(expiry_timestamp) < datetime.now():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="invalid or expired token"
+        )
+    else:
+        new_access_token = create_access_token(user_data=token_details["user"])
+        return JSONResponse(content={"access_token": new_access_token})
+
+
+@auth_router.get("/logout")
+async def revoke_token(token_details: dict = Depends(AccessTokenBearer())):
+    jwtId = token_details["jwtId"]
+    await add_jwtId_to_blocklist(jwtId)
+
+    return JSONResponse(content={"message": "logged out successfully"})

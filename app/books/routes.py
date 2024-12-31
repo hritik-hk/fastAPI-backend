@@ -28,7 +28,11 @@ async def get_all_books(
 
 # get a book using book_id from DB
 @book_router.get("/{book_id}", response_model=Book)
-async def get_book(book_id: UUID, session: AsyncSession = Depends(get_session)) -> dict:
+async def get_book(
+    book_id: UUID,
+    session: AsyncSession = Depends(get_session),
+    user_details=Depends(access_token_bearer),
+) -> dict:
     book = await book_service.get_book(book_id, session)
 
     if book is None:
@@ -42,7 +46,9 @@ async def get_book(book_id: UUID, session: AsyncSession = Depends(get_session)) 
 # add a book in database
 @book_router.post("/", status_code=status.HTTP_201_CREATED, response_model=Book)
 async def create_book(
-    book_data: BookCreateModel, session: AsyncSession = Depends(get_session)
+    book_data: BookCreateModel,
+    session: AsyncSession = Depends(get_session),
+    user_details=Depends(access_token_bearer),
 ) -> dict:
     new_book = await book_service.create_book(book_data, session)
     if new_book:
@@ -60,6 +66,7 @@ async def update_book(
     book_id: UUID,
     book_update_data: BookUpdateModel,
     session: AsyncSession = Depends(get_session),
+    user_details=Depends(access_token_bearer),
 ) -> dict:
     updated_book = await book_service.update_book(book_id, book_update_data, session)
     if updated_book is None:
@@ -72,7 +79,11 @@ async def update_book(
 
 # delete a book from DB
 @book_router.delete("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_book(book_id: UUID, session: AsyncSession = Depends(get_session)):
+async def delete_book(
+    book_id: UUID,
+    session: AsyncSession = Depends(get_session),
+    user_details=Depends(access_token_bearer),
+):
     deleted_book = await book_service.delete_book(book_id, session)
     if deleted_book is None:
         raise HTTPException(
