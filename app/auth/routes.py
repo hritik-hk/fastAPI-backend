@@ -9,12 +9,18 @@ from .schemas import UserCreateModel, UserModel, UserLoginModel
 from .service import UserService
 from app.database.main import get_session
 from .utils import create_access_token, verify_password
-from .dependencies import RefreshTokenBearer, AccessTokenBearer
+from .dependencies import (
+    RefreshTokenBearer,
+    AccessTokenBearer,
+    get_current_user,
+    RoleChecker,
+)
 from app.database.redis import add_jwtId_to_blocklist
 
 
 auth_router = APIRouter()
 user_service = UserService()
+role_checker = Depends(RoleChecker(["admin", "user"]))
 
 
 @auth_router.post(
@@ -51,12 +57,17 @@ async def login_user(
         isValid = verify_password(password, hash=user.password_hash)
         if isValid:
             access_token = create_access_token(
-                user_data={"email": user.email, "userId": str(user.id)}
+                user_data={
+                    "email": user.email,
+                    "role": user.role,
+                    "userId": str(user.id),
+                }
             )
 
             refresh_token = create_access_token(
                 user_data={
                     "email": user.email,
+                    "role": user.role,
                     "userId": str(user.id),
                 },
                 expiry=timedelta(days=2),
@@ -89,6 +100,11 @@ async def get_new_access_token(token_details: dict = Depends(RefreshTokenBearer(
     else:
         new_access_token = create_access_token(user_data=token_details["user"])
         return JSONResponse(content={"access_token": new_access_token})
+
+
+@auth_router.get("/me", dependencies=[role_checker])
+async def get_current_user(user=Depends(get_current_user)):
+    return user
 
 
 @auth_router.get("/logout")
