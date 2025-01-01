@@ -13,6 +13,7 @@ class Book(BaseModel):
     publish_date: date
     page_count: int
     language: str
+    user_id: uuid.UUID
     created_at: datetime
     updated_at: datetime
 
@@ -33,4 +34,3 @@ class BookUpdateModel(BaseModel):
     publish_date: Optional[date] = None
     page_count: Optional[int] = None
     language: Optional[str] = None
- 

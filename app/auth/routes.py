@@ -102,7 +102,7 @@ async def get_new_access_token(token_details: dict = Depends(RefreshTokenBearer(
         return JSONResponse(content={"access_token": new_access_token})
 
 
-@auth_router.get("/me", dependencies=[role_checker])
+@auth_router.get("/me", response_model=UserModel, dependencies=[role_checker])
 async def get_current_user(user=Depends(get_current_user)):
     return user
 
