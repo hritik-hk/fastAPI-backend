@@ -1,7 +1,9 @@
 from pydantic import BaseModel
 from datetime import date, datetime
-from typing import Optional
+from typing import Optional, List
 import uuid
+
+from app.reviews.schemas import ReviewModel
 
 
 # defining models for input validations using pydantic
@@ -16,6 +18,10 @@ class Book(BaseModel):
     user_id: uuid.UUID
     created_at: datetime
     updated_at: datetime
+
+
+class BookDetailModel(Book):
+    reviews: List[ReviewModel]
 
 
 class BookCreateModel(BaseModel):

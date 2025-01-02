@@ -7,8 +7,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from app.books.models import Book
-from app.auth.models import User
+from app.database.models import User, Book
 from sqlmodel import SQLModel
 from app.config import Config
 

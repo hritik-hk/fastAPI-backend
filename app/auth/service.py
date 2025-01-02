@@ -1,4 +1,4 @@
-from .models import User
+from app.database.models import User
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
 from .schemas import UserCreateModel

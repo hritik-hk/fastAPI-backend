@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from datetime import timedelta, datetime
 
 
-from .schemas import UserCreateModel, UserModel, UserLoginModel
+from .schemas import UserCreateModel, UserModel, UserLoginModel, UserBookModel
 from .service import UserService
 from app.database.main import get_session
 from .utils import create_access_token, verify_password
@@ -102,7 +102,7 @@ async def get_new_access_token(token_details: dict = Depends(RefreshTokenBearer(
         return JSONResponse(content={"access_token": new_access_token})
 
 
-@auth_router.get("/me", response_model=UserModel, dependencies=[role_checker])
+@auth_router.get("/me", response_model=UserBookModel, dependencies=[role_checker])
 async def get_current_user(user=Depends(get_current_user)):
     return user
 

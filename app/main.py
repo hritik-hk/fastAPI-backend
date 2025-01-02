@@ -6,6 +6,7 @@ from app.database.main import init_db
 # routes
 from app.books.routes import book_router
 from app.auth.routes import auth_router
+from app.reviews.routes import review_router
 
 
 @asynccontextmanager
@@ -26,6 +27,7 @@ def initialize_backend_application(lifespan_events) -> FastAPI:
 
     app.include_router(auth_router, prefix=f"/api/{VERSION}/auth", tags="auth")
     app.include_router(book_router, prefix=f"/api/{VERSION}/books", tags="books")
+    app.include_router(review_router, prefix=f"/api/{VERSION}/reviews", tags="reviews")
 
     return app
 

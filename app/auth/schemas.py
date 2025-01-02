@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import List
 
 from app.books import schemas
+from app.reviews.schemas import ReviewModel
 
 
 class UserCreateModel(BaseModel):
@@ -24,7 +25,11 @@ class UserModel(BaseModel):
     is_verified: bool
     created_at: datetime
     updated_at: datetime
+
+
+class UserBookModel(UserModel):
     books: List[schemas.Book]
+    reviews: List[ReviewModel]
 
 
 class UserLoginModel(BaseModel):

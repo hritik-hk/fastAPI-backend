@@ -9,7 +9,7 @@ from .utils import decode_token
 from app.database.redis import token_in_blocklist
 from app.database.main import get_session
 from .service import UserService
-from .models import User
+from app.database.models import User
 
 user_service = UserService()
 
