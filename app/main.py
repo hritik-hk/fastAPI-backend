@@ -9,6 +9,7 @@ from app.auth.routes import auth_router
 from app.reviews.routes import review_router
 
 from .errors import register_all_errors
+from .middlewares import register_middlewares
 
 
 @asynccontextmanager
@@ -27,6 +28,7 @@ def initialize_backend_application(lifespan_events) -> FastAPI:
         lifespan=lifespan_events,
     )
     register_all_errors(app)
+    register_middlewares(app)
     app.include_router(auth_router, prefix=f"/api/{VERSION}/auth", tags="auth")
     app.include_router(book_router, prefix=f"/api/{VERSION}/books", tags="books")
     app.include_router(review_router, prefix=f"/api/{VERSION}/reviews", tags="reviews")
