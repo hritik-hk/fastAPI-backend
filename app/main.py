@@ -8,6 +8,8 @@ from app.books.routes import book_router
 from app.auth.routes import auth_router
 from app.reviews.routes import review_router
 
+from .errors import register_all_errors
+
 
 @asynccontextmanager
 async def lifeSpan_events(app: FastAPI):
@@ -19,12 +21,12 @@ async def lifeSpan_events(app: FastAPI):
 def initialize_backend_application(lifespan_events) -> FastAPI:
     app = FastAPI(
         version=VERSION,
-        title="Bookly",
+        title="BookHub",
         description="REST APIs for book web service",
         docs_url="/docs",
         lifespan=lifespan_events,
     )
-
+    register_all_errors(app)
     app.include_router(auth_router, prefix=f"/api/{VERSION}/auth", tags="auth")
     app.include_router(book_router, prefix=f"/api/{VERSION}/books", tags="books")
     app.include_router(review_router, prefix=f"/api/{VERSION}/reviews", tags="reviews")
