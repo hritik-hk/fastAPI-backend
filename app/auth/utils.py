@@ -3,10 +3,16 @@ from datetime import timedelta, datetime
 import jwt
 import uuid
 import logging
+from itsdangerous import URLSafeTimedSerializer
+
 from app.config import Config
 
 
 passwd_context = CryptContext(schemes=["bcrypt"])
+
+serializer = URLSafeTimedSerializer(
+    secret_key=Config.JWT_SECRET, salt="email-verification"
+)
 
 
 def generate_passwd_hash(password: str) -> str:
@@ -47,3 +53,19 @@ def decode_token(token: str) -> dict:
     except jwt.PyJWTError as error:
         logging.exception(error)
         return None
+
+
+def create_url_safe_token(data: dict):
+    token = serializer.dumps(data)
+
+    return token
+
+
+def decode_url_safe_token(token: str):
+    try:
+        token_data = serializer.loads(token)
+
+        return token_data
+
+    except Exception as e:
+        logging.error(str(e))
