@@ -2,9 +2,7 @@ from redis import asyncio as aioredis
 from app.config import Config
 
 
-redis_client = aioredis.StrictRedis(
-    host=Config.REDIS_HOST, port=Config.REDIS_PORT, db=0
-)
+redis_client = aioredis.from_url(Config.REDIS_URL)
 
 
 async def add_jwtId_to_blocklist(jwtId: str) -> None:

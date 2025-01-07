@@ -30,6 +30,7 @@ from app.database.redis import add_jwtId_to_blocklist
 from app.errors import UserAlreadyExists, InvalidCredentials, InvalidToken, UserNotFound
 from app.mail import mail, create_message
 from app.config import Config
+from app.celery import send_email
 
 
 auth_router = APIRouter()
@@ -58,12 +59,9 @@ async def create_user_account(
         <h1>Verify your email</h1>
         <p>Click this <a href="{link}">link</a>  to verify your email</p>
         """
-        emails = [email]
-        message = create_message(
-            recipients=emails, subject="Test Mail- BookHub", body=html_message
-        )
-
-        await mail.send_message(message)
+        subject = "Verify Your email - Bookhub"
+        send_email
+        send_email.delay([email], subject, html_message)
 
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,
@@ -169,12 +167,8 @@ async def password_reset_request(email_data: PasswordResetRequestModel):
     <h1>Reset Your Password</h1>
     <p>Please click this <a href="{link}">link</a> to Reset Your Password</p>
     """
-    subject = "Reset Your Password"
-
-    emails = [email]
-    message = create_message(recipients=emails, subject=subject, body=html_message)
-
-    await mail.send_message(message)
+    subject = "Reset Your Password - BookHub"
+    send_email.delay([email], subject, html_message)
 
     return JSONResponse(
         content={
