@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from sqlmodel.ext.asyncio.session import AsyncSession
 from fastapi.responses import JSONResponse
 from datetime import timedelta, datetime
@@ -8,6 +8,8 @@ from .schemas import (
     UserCreateModel,
     UserLoginModel,
     UserBookModel,
+    PasswordResetConfirmModel,
+    PasswordResetRequestModel,
 )
 from .service import UserService
 from app.database.main import get_session
@@ -16,6 +18,7 @@ from .utils import (
     verify_password,
     create_url_safe_token,
     decode_url_safe_token,
+    generate_passwd_hash,
 )
 from .dependencies import (
     RefreshTokenBearer,
@@ -152,6 +155,71 @@ async def get_new_access_token(token_details: dict = Depends(RefreshTokenBearer(
 @auth_router.get("/me", response_model=UserBookModel, dependencies=[role_checker])
 async def get_current_user(user=Depends(get_current_user)):
     return user
+
+
+@auth_router.post("/password-reset-request")
+async def password_reset_request(email_data: PasswordResetRequestModel):
+    email = email_data.email
+
+    token = create_url_safe_token({"email": email})
+
+    link = f"http://{Config.DOMAIN}/api/v1/auth/password-reset-confirm/{token}"
+
+    html_message = f"""
+    <h1>Reset Your Password</h1>
+    <p>Please click this <a href="{link}">link</a> to Reset Your Password</p>
+    """
+    subject = "Reset Your Password"
+
+    emails = [email]
+    message = create_message(recipients=emails, subject=subject, body=html_message)
+
+    await mail.send_message(message)
+
+    return JSONResponse(
+        content={
+            "message": "Please check your email for instructions to reset your password",
+        },
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@auth_router.post("/password-reset-confirm/{token}")
+async def reset_account_password(
+    token: str,
+    passwords: PasswordResetConfirmModel,
+    session: AsyncSession = Depends(get_session),
+):
+    new_password = passwords.new_password
+    confirm_password = passwords.confirm_new_password
+
+    if new_password != confirm_password:
+        raise HTTPException(
+            detail="Passwords do not match", status_code=status.HTTP_400_BAD_REQUEST
+        )
+
+    token_data = decode_url_safe_token(token)
+
+    user_email = token_data.get("email")
+
+    if user_email:
+        user = await user_service.get_user_by_email(user_email, session)
+
+        if not user:
+            raise UserNotFound()
+
+        passwd_hash = generate_passwd_hash(new_password)
+        await user_service.update_user(user, {"password_hash": passwd_hash}, session)
+
+        return JSONResponse(
+            content={"message": "Password reset Successfully"},
+            status_code=status.HTTP_200_OK,
+        )
+
+    return JSONResponse(
+        content={"message": "Error occured during password reset."},
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    )
 
 
 @auth_router.get("/logout")

@@ -37,5 +37,14 @@ class UserLoginModel(BaseModel):
     password: str
 
 
+class PasswordResetRequestModel(BaseModel):
+    email: str
+
+
+class PasswordResetConfirmModel(BaseModel):
+    new_password: str
+    confirm_new_password: str
+
+
 class EmailModel(BaseModel):
     emailList: List[str]

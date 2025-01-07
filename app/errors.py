@@ -65,6 +65,12 @@ class UserNotFound(BookHubException):
     pass
 
 
+class AccountNotVerified(Exception):
+    """Account not yet verified"""
+
+    pass
+
+
 def create_exception_handler(
     status_code: int, initial_detail: Any
 ) -> Callable[[Request, Exception], JSONResponse]:
@@ -178,6 +184,18 @@ def register_all_errors(app: FastAPI):
             initial_detail={
                 "message": "Book Not Found",
                 "error_code": "book_not_found",
+            },
+        ),
+    )
+
+    app.add_exception_handler(
+        AccountNotVerified,
+        create_exception_handler(
+            status_code=status.HTTP_403_FORBIDDEN,
+            initial_detail={
+                "message": "Account Not verified",
+                "error_code": "account_not_verified",
+                "resolution": "Please check your email for verification details",
             },
         ),
     )
